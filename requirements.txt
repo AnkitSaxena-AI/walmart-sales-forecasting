@@ -1,0 +1,21 @@
+# ---------------------------------------------------------------
+# Walmart Sales Analysis & Forecasting — Python dependencies
+# Tested with Python 3.11+. Install with:  pip install -r requirements.txt
+# ---------------------------------------------------------------
+
+# Core data & analysis stack
+pandas==2.3.3
+numpy==2.2.6
+scipy==1.15.3
+
+# Visualization
+matplotlib==3.10.9
+seaborn==0.13.2
+
+# Time-series modelling (Holt-Winters / SARIMAX, seasonal decomposition)
+statsmodels==0.14.6
+
+# Notebook environment
+jupyter>=1.0.0
+notebook>=7.0.0
+ipykernel>=6.0.0
