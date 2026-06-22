@@ -62,7 +62,7 @@
 
 A retail chain with **45 outlets** is struggling to match inventory **supply with demand**. This project turns **three years of weekly sales data** (Feb 2010 → Oct 2012) into clear business insight, then builds a model that **forecasts demand for every store over the next 12 weeks** so inventory can be planned ahead.
 
-> **TL;DR** — Sales are driven overwhelmingly by the **calendar** (a huge Nov–Dec holiday peak), not by weather or fuel price. Macro factors like unemployment and CPI matter only for **specific stores**. A per‑store **Holt‑Winters** model forecasts the next 12 weeks with a backtested **~4.3% error (MAPE)**.
+> **TL;DR** — Sales are driven overwhelmingly by the **calendar** (a huge Nov–Dec holiday peak), not by weather or fuel price. Macro factors like unemployment and CPI matter only for **specific stores**. Each store is segregated and forecast with a per-store **SARIMA** model — a backtested **~2.7% error (MAPE)**, beating ARIMA and Holt-Winters.
 
 ### ⭐ Key Results at a Glance
 
@@ -74,7 +74,7 @@ A retail chain with **45 outlets** is struggling to match inventory **supply wit
 | 👷 **Unemployment** | Weak overall (**−0.11**); hits **Stores 38 & 44** hardest |
 | 🛍️ **CPI** | Weak overall (**−0.07**); strong for **Stores 36, 35, 14** |
 | 🌡️ **Temperature** | Negligible (**−0.06**) |
-| 🔮 **Forecast model** | **Holt‑Winters** — **4.3%** mean MAPE (12‑week backtest), beats baseline on 42/45 stores |
+| 🔮 **Forecast model** | **SARIMA** (seasonal ARIMA, m=52) — **2.7%** mean MAPE (12-week backtest), beats ARIMA & Holt-Winters; 5 stores deep-dived + all 45 forecast |
 
 ---
 
@@ -122,7 +122,7 @@ Using statistical analysis, EDA, outlier analysis and missing‑value handling, 
 | Data wrangling | **pandas**, **NumPy** |
 | Statistics | **SciPy** (`scipy.stats`) |
 | Visualization | **Matplotlib**, **seaborn** |
-| Time‑series modelling | **statsmodels** (Holt‑Winters / seasonal decomposition) |
+| Time-series modelling | **statsmodels** (SARIMA / ARIMA, ADF test) |
 | Environment | **Jupyter Notebook** |
 
 ---
@@ -206,19 +206,33 @@ Weak overall (**−0.07**) but strong for price‑sensitive **Store 36 (−0.92)
 
 ## 🔮 Forecasting the Next 12 Weeks
 
-Each store is modelled as its own weekly time series with a **52‑week seasonal cycle** using **Holt‑Winters Exponential Smoothing** (additive trend + additive seasonality). The forecast horizon (Nov 2012 → Jan 2013) includes the holiday peak — so capturing seasonality is essential.
+Inventory planning is a **per-store** problem, so the panel is **segregated into one weekly-sales series per store** and each store is modelled individually. Walmart sales carry a strong **yearly seasonality** (Thanksgiving / Christmas), so a non-seasonal ARIMA is not enough — we use **SARIMA** (seasonal ARIMA, weekly period **m = 52**) and benchmark it against ARIMA.
 
-**Validation** — the last 12 weeks of each store were held out and predicted:
+The full workflow — **segregation → ADF stationarity → order selection → ARIMA-vs-SARIMA → 12-week backtest → forecast** — is demonstrated in depth on **5 representative stores spanning the performance range** (20, 19, 34, 9, 33), then applied to **all 45 stores**.
 
-| Model | Mean MAPE | Median MAPE |
+<p align="center"><img src="assets/store_segregation.png" alt="Store segregation into per-store series" width="80%"/></p>
+
+**Model choice** — adding the seasonal term is decisive: on Store 20 the AIC drops from **3,959 (ARIMA)** to **963 (SARIMA)**, confirming the yearly cycle is the dominant structure.
+
+**Validation** — the last 12 weeks of each store were held out and predicted (MAPE):
+
+| Store | ARIMA MAPE | SARIMA MAPE |
 |---|:---:|:---:|
-| **Holt‑Winters** (chosen) | **4.33%** | **3.01%** |
-| Seasonal‑naïve (baseline) | 8.77% | 7.14% |
+| 20 | 4.09% | **2.82%** |
+| 19 | 5.57% | **2.75%** |
+| 34 | 3.08% | **1.76%** |
+| 9  | 3.76% | **3.29%** |
+| 33 | 2.50% | **3.02%** |
+| **Mean** | 3.80% | **2.73%** |
 
-Holt‑Winters more than halves the baseline error and wins on **42 of 45 stores**. Final forecasts for all 45 stores (540 rows, with 95% confidence bands) are in [`walmart_12week_forecast.csv`](walmart_12week_forecast.csv).
+SARIMA's mean **2.73%** MAPE beats ARIMA (3.80%) and the earlier Holt-Winters baseline (4.33%), while correctly tracking the holiday surge that flat ARIMA misses.
 
-<p align="center"><img src="assets/forecast_all_stores.png" alt="All-store forecast" width="92%"/></p>
-<p align="center"><img src="assets/forecast_store20.png" alt="Store 20 forecast" width="92%"/></p>
+<p align="center"><img src="assets/backtest_grid.png" alt="Backtest: SARIMA vs ARIMA on the 12-week hold-out" width="92%"/></p>
+
+Re-fitting SARIMA on each store's full history yields the 12-week forecast with 95% confidence bands, applied to **all 45 stores** (540 rows in [`walmart_12week_forecast.csv`](walmart_12week_forecast.csv); ~$623.8M chain-wide).
+
+<p align="center"><img src="assets/forecast_all_stores.png" alt="All-store 12-week SARIMA forecast" width="92%"/></p>
+<p align="center"><img src="assets/forecast_store20.png" alt="Store 20 SARIMA forecast" width="92%"/></p>
 
 ---
 
