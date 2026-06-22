@@ -62,7 +62,7 @@
 
 A retail chain with **45 outlets** is struggling to match inventory **supply with demand**. This project turns **three years of weekly sales data** (Feb 2010 → Oct 2012) into clear business insight, then builds a model that **forecasts demand for every store over the next 12 weeks** so inventory can be planned ahead.
 
-> **TL;DR** — Sales are driven overwhelmingly by the **calendar** (a huge Nov–Dec holiday peak), not by weather or fuel price. Macro factors like unemployment and CPI matter only for **specific stores**. Each store is segregated and forecast with a per-store **SARIMA** model — a backtested **~2.7% error (MAPE)**, beating ARIMA and Holt-Winters.
+> **TL;DR** — Sales are driven overwhelmingly by the **calendar** (a huge Nov–Dec holiday peak), not by weather or fuel price. Macro factors like unemployment and CPI matter only for **specific stores**. Each store is segregated and forecast with a per-store **SARIMA** model — a backtested **~2.7% error (MAPE)**, beating a non-seasonal ARIMA baseline.
 
 ### ⭐ Key Results at a Glance
 
@@ -74,7 +74,7 @@ A retail chain with **45 outlets** is struggling to match inventory **supply wit
 | 👷 **Unemployment** | Weak overall (**−0.11**); hits **Stores 38 & 44** hardest |
 | 🛍️ **CPI** | Weak overall (**−0.07**); strong for **Stores 36, 35, 14** |
 | 🌡️ **Temperature** | Negligible (**−0.06**) |
-| 🔮 **Forecast model** | **SARIMA** (seasonal ARIMA, m=52) — **2.7%** mean MAPE (12-week backtest), beats ARIMA & Holt-Winters; 5 stores deep-dived + all 45 forecast |
+| 🔮 **Forecast model** | **SARIMA** (seasonal ARIMA, m=52) — **2.7%** mean MAPE (12-week backtest), beats a non-seasonal ARIMA baseline; 5 stores deep-dived + all 45 forecast |
 
 ---
 
@@ -225,7 +225,7 @@ The full workflow — **segregation → ADF stationarity → order selection →
 | 33 | 2.50% | **3.02%** |
 | **Mean** | 3.80% | **2.73%** |
 
-SARIMA's mean **2.73%** MAPE beats ARIMA (3.80%) and the earlier Holt-Winters baseline (4.33%), while correctly tracking the holiday surge that flat ARIMA misses.
+SARIMA's mean **2.73%** MAPE beats a non-seasonal ARIMA (3.80%), while correctly tracking the holiday surge that flat ARIMA misses.
 
 <p align="center"><img src="assets/backtest_grid.png" alt="Backtest: SARIMA vs ARIMA on the 12-week hold-out" width="92%"/></p>
 
